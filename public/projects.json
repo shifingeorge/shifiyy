@@ -6,5 +6,13 @@
     "name": "Title Sponsor",
     "description": "Title sponsor poster for GB Fight Club",
     "createdAt": "2026-05-11T18:27:37.484Z"
+  },
+  {
+    "id": "1778524887170-ben-profile-card",
+    "src": "/projects/images/1778524887170-ben-profile-card.png",
+    "alt": "Ben Profile Card",
+    "name": "Ben Profile Card",
+    "description": "Work for GB fight club, profile card for Ben Jovakim Correya",
+    "createdAt": "2026-05-11T18:41:31.362Z"
   }
 ]

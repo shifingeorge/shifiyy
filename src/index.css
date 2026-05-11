@@ -125,12 +125,6 @@ html, body, #root {
   50% { opacity: 1; transform: scale(1.2); }
 }
 
-.header-admin-link {
-  font-size: 0.75rem !important;
-  opacity: 0.4;
-  transition: opacity 0.2s !important;
-}
-.header-admin-link:hover { opacity: 0.8 !important; }
 
 /* ── Footer ── */
 .portfolio-footer {

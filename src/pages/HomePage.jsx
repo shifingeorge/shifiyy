@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import DomeGallery from '../components/DomeGallery';
 
 export default function HomePage() {
-  const [images, setImages] = useState(null); // null = loading
+  const [images, setImages] = useState(null);
 
   useEffect(() => {
     fetch('/projects.json?t=' + Date.now())
@@ -20,7 +20,6 @@ export default function HomePage() {
         <div className="header-name">shifiyy</div>
         <nav className="header-nav">
           <a href="#contact">Contact</a>
-          <a href="#/admin" className="header-admin-link">Admin</a>
         </nav>
       </header>
 
@@ -32,7 +31,6 @@ export default function HomePage() {
         ) : images.length === 0 ? (
           <div className="gallery-empty">
             <p>No projects yet.</p>
-            <a href="#/admin">Add your first project →</a>
           </div>
         ) : (
           <DomeGallery

@@ -22,5 +22,14 @@
     "name": "World Championship",
     "description": "Poster for GB Fight Club",
     "createdAt": "2026-05-11T18:57:30.167Z"
+  },
+  {
+    "id": "1778525968264-dresso",
+    "src": "/projects/images/1778525968264-dresso.png",
+    "alt": "Dresso",
+    "name": "Dresso",
+    "description": "Project -> AI powered dressing companion",
+    "url": "https://www.figma.com/community/file/1511432111707648819/dresso-e-commerce",
+    "createdAt": "2026-05-11T18:59:31.536Z"
   }
 ]

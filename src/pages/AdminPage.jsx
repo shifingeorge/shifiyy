@@ -1,20 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  getToken, setToken, clearToken,
+  getToken, setToken, clearToken, hasEnvToken,
   verifyToken, getProjects, addProject, removeProject,
 } from '../lib/github';
 import './AdminPage.css';
 
 export default function AdminPage() {
-  const [tokenInput, setTokenInput] = useState(getToken());
+  const [tokenInput, setTokenInput] = useState('');
   const [connected, setConnected] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [usingEnv, setUsingEnv] = useState(false);
 
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
 
   const [form, setForm] = useState({ name: '', description: '', url: '' });
-  const [image, setImage] = useState(null); // { preview, base64, ext }
+  const [image, setImage] = useState(null);
   const [draggingOver, setDraggingOver] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -22,18 +23,20 @@ export default function AdminPage() {
 
   const fileRef = useRef(null);
 
-  // Auto-connect if token already saved
-  useEffect(() => {
-    if (getToken()) autoConnect();
-  }, []); // eslint-disable-line
+  useEffect(() => { autoConnect(); }, []); // eslint-disable-line
 
   async function autoConnect() {
+    if (!getToken()) return;
+    setVerifying(true);
     try {
       await verifyToken();
       setConnected(true);
+      setUsingEnv(hasEnvToken());
       loadProjects();
     } catch {
-      clearToken();
+      if (!hasEnvToken()) clearToken();
+    } finally {
+      setVerifying(false);
     }
   }
 
@@ -44,11 +47,12 @@ export default function AdminPage() {
       setToken(tokenInput.trim());
       await verifyToken();
       setConnected(true);
+      setUsingEnv(false);
       showToast('success', '✓ Connected to GitHub');
       loadProjects();
-    } catch (e) {
+    } catch {
       clearToken();
-      showToast('error', 'Invalid token or no push access to this repo.');
+      showToast('error', 'Invalid token or no push access.');
     } finally {
       setVerifying(false);
     }
@@ -58,6 +62,7 @@ export default function AdminPage() {
     clearToken();
     setTokenInput('');
     setConnected(false);
+    setUsingEnv(false);
     setProjects([]);
   }
 
@@ -81,8 +86,7 @@ export default function AdminPage() {
     const ext = file.name.split('.').pop().toLowerCase();
     const reader = new FileReader();
     reader.onload = e => {
-      const result = e.target.result;
-      setImage({ preview: result, base64: result.split(',')[1], ext });
+      setImage({ preview: e.target.result, base64: e.target.result.split(',')[1], ext });
     };
     reader.readAsDataURL(file);
   }, []);
@@ -138,7 +142,6 @@ export default function AdminPage() {
 
   return (
     <div className="ap-root">
-      {/* Header */}
       <header className="ap-header">
         <div className="ap-logo">
           shifiyy <span className="ap-logo-tag">/admin</span>
@@ -146,47 +149,49 @@ export default function AdminPage() {
         <a href="/" className="ap-back-link">← View Portfolio</a>
       </header>
 
-      {/* Token bar */}
+      {/* Token bar — auto-hidden when env token is configured */}
       <div className={`ap-token-bar ${connected ? 'is-connected' : ''}`}>
-        <span className="ap-token-icon">{connected ? '🟢' : '🔑'}</span>
+        <span className="ap-token-icon">{connected ? '🟢' : verifying ? '⏳' : '🔑'}</span>
         {connected ? (
           <>
-            <span className="ap-token-status">Connected to <strong>shifingeorge/shifiyy</strong></span>
-            <button className="ap-btn ap-btn-ghost ap-btn-sm" onClick={handleDisconnect}>
-              Disconnect
-            </button>
+            <span className="ap-token-status">
+              Connected to <strong>shifingeorge/shifiyy</strong>
+              {usingEnv && <span className="ap-env-badge">ENV</span>}
+            </span>
+            {!usingEnv && (
+              <button className="ap-btn ap-btn-ghost ap-btn-sm" onClick={handleDisconnect}>
+                Disconnect
+              </button>
+            )}
           </>
+        ) : verifying ? (
+          <span className="ap-token-status">Connecting…</span>
         ) : (
           <>
             <input
               type="password"
               className="ap-token-input"
-              placeholder="Paste your GitHub Personal Access Token…"
+              placeholder="Paste GitHub PAT (or set VITE_GITHUB_TOKEN in .env)"
               value={tokenInput}
               onChange={e => setTokenInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleConnect()}
-              autoFocus
             />
             <button
               className="ap-btn ap-btn-primary ap-btn-sm"
               onClick={handleConnect}
               disabled={verifying || !tokenInput.trim()}
             >
-              {verifying ? 'Connecting…' : 'Connect'}
+              Connect
             </button>
           </>
         )}
       </div>
 
-      {/* Main content */}
       <div className="ap-content">
-
-        {/* ── Add project form ── */}
+        {/* Add project form */}
         <section className="ap-panel">
           <h2 className="ap-panel-title">Add Project</h2>
           <form className="ap-form" onSubmit={handleSubmit}>
-
-            {/* Image drop zone */}
             <div
               className={`ap-drop-zone ${draggingOver ? 'is-over' : ''} ${image ? 'has-image' : ''}`}
               onDragOver={e => { e.preventDefault(); setDraggingOver(true); }}
@@ -209,87 +214,46 @@ export default function AdminPage() {
                   <span className="ap-drop-hint">JPG · PNG · WEBP</span>
                 </div>
               )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={e => processFile(e.target.files[0])}
-              />
+              <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => processFile(e.target.files[0])} />
             </div>
 
             <div className="ap-field">
               <label className="ap-label">Name *</label>
-              <input
-                className="ap-input"
-                type="text"
-                placeholder="My Awesome Project"
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                required
-              />
+              <input className="ap-input" type="text" placeholder="My Awesome Project" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
             </div>
 
             <div className="ap-field">
               <label className="ap-label">Description</label>
-              <textarea
-                className="ap-input ap-textarea"
-                placeholder="A short description shown when the image is opened…"
-                value={form.description}
-                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                rows={3}
-              />
+              <textarea className="ap-input ap-textarea" placeholder="A short description…" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} />
             </div>
 
             <div className="ap-field">
               <label className="ap-label">Website URL <span className="ap-label-opt">(optional)</span></label>
-              <input
-                className="ap-input"
-                type="url"
-                placeholder="https://myproject.com"
-                value={form.url}
-                onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
-              />
+              <input className="ap-input" type="url" placeholder="https://myproject.com" value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} />
             </div>
 
-            <button
-              type="submit"
-              className="ap-btn ap-btn-primary ap-btn-full"
-              disabled={submitting || !connected || !image || !form.name.trim()}
-            >
-              {submitting ? (
-                <><span className="ap-spinner" /> Publishing to GitHub…</>
-              ) : (
-                'Publish Project'
-              )}
+            <button type="submit" className="ap-btn ap-btn-primary ap-btn-full" disabled={submitting || !connected || !image || !form.name.trim()}>
+              {submitting ? <><span className="ap-spinner" /> Publishing…</> : 'Publish Project'}
             </button>
-            {!connected && (
-              <p className="ap-form-hint">Connect your GitHub token above to publish.</p>
+            {!connected && !verifying && (
+              <p className="ap-form-hint">Connect a GitHub token to publish.</p>
             )}
           </form>
         </section>
 
-        {/* ── Projects list ── */}
+        {/* Projects list */}
         <section className="ap-panel ap-panel-projects">
           <div className="ap-panel-header">
-            <h2 className="ap-panel-title">
-              Published <span className="ap-count">{projects.length}</span>
-            </h2>
-            <button
-              className="ap-btn ap-btn-ghost ap-btn-sm"
-              onClick={loadProjects}
-              disabled={loadingProjects || !connected}
-            >
+            <h2 className="ap-panel-title">Published <span className="ap-count">{projects.length}</span></h2>
+            <button className="ap-btn ap-btn-ghost ap-btn-sm" onClick={loadProjects} disabled={loadingProjects || !connected}>
               {loadingProjects ? '…' : '↻ Refresh'}
             </button>
           </div>
 
           {!connected ? (
-            <div className="ap-empty">Connect your token to see projects.</div>
+            <div className="ap-empty">{verifying ? <><span className="ap-spinner" /> Connecting…</> : 'Connect your token to see projects.'}</div>
           ) : loadingProjects ? (
-            <div className="ap-empty">
-              <span className="ap-spinner" /> Loading…
-            </div>
+            <div className="ap-empty"><span className="ap-spinner" /> Loading…</div>
           ) : projects.length === 0 ? (
             <div className="ap-empty">
               <span className="ap-empty-icon">🌐</span>
@@ -302,35 +266,14 @@ export default function AdminPage() {
                 <div key={p.id} className="ap-project-card">
                   <div className="ap-card-thumb">
                     <img src={p.src} alt={p.alt} />
-                    {p.url && (
-                      <a
-                        href={p.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="ap-card-visit"
-                        title="Visit website"
-                      >
-                        ↗
-                      </a>
-                    )}
+                    {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="ap-card-visit" title="Visit website">↗</a>}
                   </div>
                   <div className="ap-card-info">
                     <strong className="ap-card-name">{p.name}</strong>
-                    {p.description && (
-                      <p className="ap-card-desc">{p.description}</p>
-                    )}
-                    {p.url && (
-                      <a href={p.url} target="_blank" rel="noreferrer" className="ap-card-url">
-                        {p.url.replace(/^https?:\/\//, '')}
-                      </a>
-                    )}
+                    {p.description && <p className="ap-card-desc">{p.description}</p>}
+                    {p.url && <a href={p.url} target="_blank" rel="noreferrer" className="ap-card-url">{p.url.replace(/^https?:\/\//, '')}</a>}
                   </div>
-                  <button
-                    className="ap-card-delete"
-                    onClick={() => handleDelete(p)}
-                    disabled={deletingId === p.id}
-                    title="Remove project"
-                  >
+                  <button className="ap-card-delete" onClick={() => handleDelete(p)} disabled={deletingId === p.id} title="Remove project">
                     {deletingId === p.id ? '…' : '✕'}
                   </button>
                 </div>
@@ -340,12 +283,7 @@ export default function AdminPage() {
         </section>
       </div>
 
-      {/* Toast */}
-      {toast && (
-        <div className={`ap-toast ap-toast-${toast.type}`}>
-          {toast.msg}
-        </div>
-      )}
+      {toast && <div className={`ap-toast ap-toast-${toast.type}`}>{toast.msg}</div>}
     </div>
   );
 }

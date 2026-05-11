@@ -1,11 +1,13 @@
 const REPO = 'shifingeorge/shifiyy';
 const BRANCH = 'main';
 const API = 'https://api.github.com';
-const TOKEN_KEY = 'shifiyy_gh_token';
 
-export const getToken = () => localStorage.getItem(TOKEN_KEY) || '';
-export const setToken = t => localStorage.setItem(TOKEN_KEY, t);
-export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
+// Token: env var (baked at build time) → localStorage fallback
+const ENV_TOKEN = import.meta.env.VITE_GITHUB_TOKEN || '';
+export const getToken = () => ENV_TOKEN || localStorage.getItem('shifiyy_gh_token') || '';
+export const hasEnvToken = () => !!ENV_TOKEN;
+export const setToken = t => localStorage.setItem('shifiyy_gh_token', t);
+export const clearToken = () => localStorage.removeItem('shifiyy_gh_token');
 
 function textToBase64(text) {
   const bytes = new TextEncoder().encode(text);

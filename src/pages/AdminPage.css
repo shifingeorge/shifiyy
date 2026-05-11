@@ -82,6 +82,19 @@
   flex: 1;
 }
 .ap-token-status strong { color: #f0edf8; }
+.ap-env-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+  background: rgba(16,185,129,0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16,185,129,0.25);
+  vertical-align: middle;
+}
 
 /* ── Buttons ── */
 .ap-btn {

@@ -40,5 +40,14 @@
     "description": "Digital Marketing Website",
     "url": "https://www.ntdigital.in/",
     "createdAt": "2026-05-11T19:00:57.168Z"
+  },
+  {
+    "id": "1778526194628-luna-bloom",
+    "src": "/projects/images/1778526194628-luna-bloom.png",
+    "alt": "Luna Bloom",
+    "name": "Luna Bloom",
+    "description": "Luna Bloom -> Where Every Petal is a Work of Art",
+    "url": "https://lunabloom.in/",
+    "createdAt": "2026-05-11T19:03:18.622Z"
   }
 ]

@@ -98,6 +98,40 @@ html, body, #root {
   z-index: 1;
 }
 
+.gallery-loading, .gallery-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(240,237,248,0.3);
+  font-size: 0.9rem;
+}
+.gallery-empty a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.82rem;
+}
+.gallery-loading-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.header-admin-link {
+  font-size: 0.75rem !important;
+  opacity: 0.4;
+  transition: opacity 0.2s !important;
+}
+.header-admin-link:hover { opacity: 0.8 !important; }
+
 /* ── Footer ── */
 .portfolio-footer {
   position: fixed;

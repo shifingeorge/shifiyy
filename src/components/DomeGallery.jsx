@@ -30,7 +30,7 @@ function buildItems(pool, seg) {
   const coords = xCols.flatMap((x, c) => { const ys = c % 2 === 0 ? evenYs : oddYs; return ys.map(y => ({ x, y, sizeX: 2, sizeY: 2 })); });
   const totalSlots = coords.length;
   if (pool.length === 0) return coords.map(c => ({ ...c, src: '', alt: '' }));
-  const normalizedImages = pool.map(image => typeof image === 'string' ? { src: image, alt: '', name: '', description: '' } : { src: image.src || '', alt: image.alt || '', name: image.name || '', description: image.description || '' });
+  const normalizedImages = pool.map(image => typeof image === 'string' ? { src: image, alt: '', name: '', description: '', url: '' } : { src: image.src || '', alt: image.alt || '', name: image.name || '', description: image.description || '', url: image.url || '' });
   const usedImages = Array.from({ length: totalSlots }, (_, i) => normalizedImages[i % normalizedImages.length]);
   for (let i = 1; i < usedImages.length; i++) {
     if (usedImages[i].src === usedImages[i - 1].src) {
@@ -39,7 +39,7 @@ function buildItems(pool, seg) {
       }
     }
   }
-  return coords.map((c, i) => ({ ...c, src: usedImages[i].src, alt: usedImages[i].alt, name: usedImages[i].name, description: usedImages[i].description }));
+  return coords.map((c, i) => ({ ...c, src: usedImages[i].src, alt: usedImages[i].alt, name: usedImages[i].name, description: usedImages[i].description, url: usedImages[i].url }));
 }
 
 function computeItemBaseRotation(offsetX, offsetY, sizeX, sizeY, segments) {
@@ -230,13 +230,22 @@ export default function DomeGallery({
     const rawSrc = parent.dataset.src || el.querySelector('img')?.src || '';
     const rawName = parent.dataset.name || '';
     const rawDesc = parent.dataset.description || '';
+    const rawUrl  = parent.dataset.url || '';
     const img = document.createElement('img'); img.src = rawSrc; overlay.appendChild(img);
     // Caption
-    if (rawName || rawDesc) {
+    if (rawName || rawDesc || rawUrl) {
       const caption = document.createElement('div');
       caption.className = 'enlarge-caption';
       if (rawName) { const n = document.createElement('span'); n.className = 'ec-name'; n.textContent = rawName; caption.appendChild(n); }
       if (rawDesc) { const d = document.createElement('span'); d.className = 'ec-desc'; d.textContent = rawDesc; caption.appendChild(d); }
+      if (rawUrl) {
+        const a = document.createElement('a');
+        a.href = rawUrl; a.target = '_blank'; a.rel = 'noreferrer';
+        a.className = 'ec-link';
+        a.textContent = 'Visit site →';
+        a.addEventListener('click', e => e.stopPropagation());
+        caption.appendChild(a);
+      }
       overlay.appendChild(caption);
       setTimeout(() => caption.classList.add('ec-visible'), enlargeTransitionMs + 80);
     }
@@ -284,7 +293,7 @@ export default function DomeGallery({
         <div className="stage">
           <div ref={sphereRef} className="sphere">
             {items.map((it, i) => (
-              <div key={`${it.x},${it.y},${i}`} className="item" data-src={it.src} data-offset-x={it.x} data-offset-y={it.y} data-size-x={it.sizeX} data-size-y={it.sizeY} data-name={it.name} data-description={it.description} style={{ ['--offset-x']: it.x, ['--offset-y']: it.y, ['--item-size-x']: it.sizeX, ['--item-size-y']: it.sizeY }}>
+              <div key={`${it.x},${it.y},${i}`} className="item" data-src={it.src} data-offset-x={it.x} data-offset-y={it.y} data-size-x={it.sizeX} data-size-y={it.sizeY} data-name={it.name} data-description={it.description} data-url={it.url} style={{ ['--offset-x']: it.x, ['--offset-y']: it.y, ['--item-size-x']: it.sizeX, ['--item-size-y']: it.sizeY }}>
                 <div className="item__image" role="button" tabIndex={0} aria-label={it.alt || 'Open image'} onClick={onTileClick} onPointerUp={onTilePointerUp}>
                   <img src={it.src} draggable={false} alt={it.alt} />
                 </div>

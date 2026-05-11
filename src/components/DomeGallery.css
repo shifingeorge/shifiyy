@@ -209,3 +209,20 @@ main.sphere-main {
   line-height: 1.5;
   font-weight: 400;
 }
+
+.ec-link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: none;
+  pointer-events: auto;
+  transition: background 0.2s;
+  align-self: flex-start;
+}
+.ec-link:hover { background: rgba(255,255,255,0.22); }

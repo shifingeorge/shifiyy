@@ -3,13 +3,10 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0a0810;
-  --fg: #f0edf8;
-  --accent: #c084fc;
-  --accent2: #818cf8;
-  --muted: rgba(240, 237, 248, 0.45);
-  --glass: rgba(255, 255, 255, 0.04);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --bg: #0C0C0C;
+  --fg: #F0EDE8;
+  --accent: #F5A623;
+  --muted: rgba(240, 237, 232, 0.4);
 }
 
 html, body, #root {
@@ -31,33 +28,6 @@ html, body, #root {
   flex-direction: column;
 }
 
-/* ── Ambient background blobs ── */
-.ambient-blob {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(100px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.18;
-  animation: float 12s ease-in-out infinite;
-}
-.blob-1 {
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, #7c3aed, transparent 70%);
-  top: -200px; left: -150px;
-  animation-delay: 0s;
-}
-.blob-2 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, #2563eb, transparent 70%);
-  bottom: -150px; right: -100px;
-  animation-delay: -6s;
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(30px) scale(1.05); }
-}
-
 /* ── Header ── */
 .portfolio-header {
   position: fixed;
@@ -66,27 +36,25 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 36px;
-  background: linear-gradient(to bottom, rgba(10,8,16,0.85) 0%, transparent 100%);
-  backdrop-filter: blur(0px);
+  padding: 22px 40px;
+  background: linear-gradient(to bottom, rgba(12,12,12,0.92) 0%, transparent 100%);
 }
 .header-name {
   font-family: 'Syne', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 800;
-  letter-spacing: 0.05em;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  text-transform: lowercase;
 }
 .header-nav { display: flex; gap: 28px; }
 .header-nav a {
   color: var(--muted);
   text-decoration: none;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
   transition: color 0.2s;
 }
 .header-nav a:hover { color: var(--fg); }
@@ -106,8 +74,8 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  color: rgba(240,237,248,0.3);
-  font-size: 0.9rem;
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 .gallery-empty a {
   color: var(--accent);
@@ -115,7 +83,7 @@ html, body, #root {
   font-size: 0.82rem;
 }
 .gallery-loading-dot {
-  width: 10px; height: 10px;
+  width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--accent);
   animation: pulse 1.2s ease-in-out infinite;
@@ -125,7 +93,6 @@ html, body, #root {
   50% { opacity: 1; transform: scale(1.2); }
 }
 
-
 /* ── Footer ── */
 .portfolio-footer {
   position: fixed;
@@ -134,20 +101,22 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 36px;
-  background: linear-gradient(to top, rgba(10,8,16,0.85) 0%, transparent 100%);
+  padding: 20px 40px;
+  background: linear-gradient(to top, rgba(12,12,12,0.92) 0%, transparent 100%);
 }
 .portfolio-footer p {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--muted);
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
 }
 .footer-cta {
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.82rem;
+  font-weight: 600;
   color: var(--accent);
   text-decoration: none;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
+  text-transform: lowercase;
   transition: opacity 0.2s;
 }
 .footer-cta:hover { opacity: 0.7; }

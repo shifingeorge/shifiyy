@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useGesture } from '@use-gesture/react';
+import gsap from 'gsap';
 import './DomeGallery.css';
 
 const DEFAULT_IMAGES = [
@@ -111,6 +112,14 @@ export default function DomeGallery({
 
   useEffect(() => { applyTransform(rotationRef.current.x, rotationRef.current.y); }, []);
 
+  useEffect(() => {
+    if (!mainRef.current) return;
+    gsap.fromTo(mainRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 1.4, delay: 0.7, ease: 'power2.out' }
+    );
+  }, []);
+
   const stopInertia = useCallback(() => { if (inertiaRAF.current) { cancelAnimationFrame(inertiaRAF.current); inertiaRAF.current = null; } }, []);
 
   const startInertia = useCallback((vx, vy) => {
@@ -170,9 +179,11 @@ export default function DomeGallery({
         el.style.visibility = ''; el.style.zIndex = 0; focusedElRef.current = null;
         rootRef.current?.removeAttribute('data-enlarging'); openingRef.current = false; unlockScroll(); return;
       }
-      const currentRect = overlay.getBoundingClientRect(), rootRect = rootRef.current.getBoundingClientRect();
+      const rootRect = rootRef.current.getBoundingClientRect();
+      const imgWrapEl = overlay.querySelector('.enlarge-img-wrap');
+      const closingRect = imgWrapEl ? imgWrapEl.getBoundingClientRect() : overlay.getBoundingClientRect();
       const originalPosRelativeToRoot = { left: originalPos.left - rootRect.left, top: originalPos.top - rootRect.top, width: originalPos.width, height: originalPos.height };
-      const overlayRelativeToRoot = { left: currentRect.left - rootRect.left, top: currentRect.top - rootRect.top, width: currentRect.width, height: currentRect.height };
+      const overlayRelativeToRoot = { left: closingRect.left - rootRect.left, top: closingRect.top - rootRect.top, width: closingRect.width, height: closingRect.height };
       const animatingOverlay = document.createElement('div');
       animatingOverlay.className = 'enlarge-closing';
       animatingOverlay.style.cssText = `position:absolute;left:${overlayRelativeToRoot.left}px;top:${overlayRelativeToRoot.top}px;width:${overlayRelativeToRoot.width}px;height:${overlayRelativeToRoot.height}px;z-index:9999;border-radius:var(--enlarge-radius,32px);overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35);transition:all ${enlargeTransitionMs}ms ease-out;pointer-events:none;margin:0;transform:none;`;
@@ -231,23 +242,31 @@ export default function DomeGallery({
     const rawName = parent.dataset.name || '';
     const rawDesc = parent.dataset.description || '';
     const rawUrl  = parent.dataset.url || '';
-    const img = document.createElement('img'); img.src = rawSrc; overlay.appendChild(img);
-    // Caption
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'enlarge-img-wrap';
+    const img = document.createElement('img'); img.src = rawSrc;
+    imgWrap.appendChild(img);
+    overlay.appendChild(imgWrap);
     if (rawName || rawDesc || rawUrl) {
-      const caption = document.createElement('div');
-      caption.className = 'enlarge-caption';
-      if (rawName) { const n = document.createElement('span'); n.className = 'ec-name'; n.textContent = rawName; caption.appendChild(n); }
-      if (rawDesc) { const d = document.createElement('span'); d.className = 'ec-desc'; d.textContent = rawDesc; caption.appendChild(d); }
+      const info = document.createElement('div');
+      info.className = 'enlarge-info';
+      if (rawName) { const n = document.createElement('span'); n.className = 'ec-name'; n.textContent = rawName; info.appendChild(n); }
+      if (rawDesc) { const d = document.createElement('span'); d.className = 'ec-desc'; d.textContent = rawDesc; info.appendChild(d); }
       if (rawUrl) {
         const a = document.createElement('a');
         a.href = rawUrl; a.target = '_blank'; a.rel = 'noreferrer';
         a.className = 'ec-link';
-        a.textContent = 'Visit site →';
+        a.textContent = 'visit site →';
         a.addEventListener('click', e => e.stopPropagation());
-        caption.appendChild(a);
+        info.appendChild(a);
       }
-      overlay.appendChild(caption);
-      setTimeout(() => caption.classList.add('ec-visible'), enlargeTransitionMs + 80);
+      overlay.appendChild(info);
+      setTimeout(() => {
+        gsap.fromTo(Array.from(info.children),
+          { x: 14, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.38, stagger: 0.09, ease: 'power2.out' }
+        );
+      }, enlargeTransitionMs + 80);
     }
     viewerRef.current.appendChild(overlay);
     const sx0 = tileR.width / frameR.width, sy0 = tileR.height / frameR.height;
